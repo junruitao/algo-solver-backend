@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  PROJECT_ID: algo-solver-backend
+  PROJECT_ID: algo-solver-backend-479204
   REGION: australia-southeast1         # TODO: Update this
   REPO_NAME: docker-repo      # TODO: Update this (Artifact Registry Repo Name)
   SERVICE_NAME: algo-solver
