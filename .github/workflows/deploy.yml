@@ -1,0 +1,58 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: algo-solver-backend
+  REGION: australia-southeast1         # TODO: Update this
+  REPO_NAME: docker-repo      # TODO: Update this (Artifact Registry Repo Name)
+  SERVICE_NAME: algo-solver
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Authenticate with Google Cloud using JSON Key
+      # (Alternatively, use Workload Identity Federation for keyless auth)
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      # Configure Docker to use gcloud as a credential helper
+      - name: Docker Auth
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      # Build the Docker image (Multi-stage build handles 'mvn package')
+      - name: Build and Push Container
+        run: |
+          DOCKER_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ env.IMAGE_TAG }}"
+          docker build -t $DOCKER_IMAGE .
+          docker push $DOCKER_IMAGE
+          echo "IMAGE_URI=$DOCKER_IMAGE" >> $GITHUB_ENV
+
+      # Deploy to Cloud Run
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: ${{ env.IMAGE_URI }}
+          env_vars: |
+            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            # Or map a secret directly if using Secret Manager:
+            # GEMINI_API_KEY=sm://projects/${{ env.PROJECT_ID }}/secrets/gemini-api-key/versions/latest
