@@ -7,8 +7,8 @@ on:
 
 env:
   PROJECT_ID: algo-solver-backend-479204
-  REGION: australia-southeast1         # TODO: Update this
-  REPO_NAME: docker-repo      # TODO: Update this (Artifact Registry Repo Name)
+  REGION: australia-southeast1
+  REPO_NAME: docker-repo
   SERVICE_NAME: algo-solver
   IMAGE_TAG: ${{ github.sha }}
 
@@ -52,7 +52,7 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${{ env.IMAGE_URI }}
-          env_vars: |
-            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+#          env_vars: |
+#            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
             # Or map a secret directly if using Secret Manager:
             # GEMINI_API_KEY=sm://projects/${{ env.PROJECT_ID }}/secrets/gemini-api-key/versions/latest
