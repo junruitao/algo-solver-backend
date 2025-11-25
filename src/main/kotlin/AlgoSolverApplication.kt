@@ -5,9 +5,12 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.io.IOException
 import java.net.URI
 import java.net.http.HttpClient
@@ -20,6 +23,22 @@ class AlgoSolverApplication
 
 fun main(args: Array<String>) {
     runApplication<AlgoSolverApplication>(*args)
+}
+
+// --- CORS Configuration ---
+@Configuration
+class CorsConfig : WebMvcConfigurer {
+    /**
+     * Configures global CORS rules.
+     * This handles the preflight OPTIONS request automatically by returning 200 OK
+     * with appropriate headers, and includes CORS headers on the final response.
+     */
+    override fun addCorsMappings(registry: CorsRegistry) {
+        registry.addMapping("/**")
+            .allowedOrigins("*") // Allow all origins (use specific URL in production)
+            .allowedMethods("GET", "POST", "OPTIONS") // Required methods
+            .allowedHeaders("*") // Allow all headers
+    }
 }
 
 // --- DTOs ---
